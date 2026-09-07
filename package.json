@@ -1,0 +1,47 @@
+{
+  "name": "mcpaudit",
+  "version": "0.1.0",
+  "description": "Audit MCP servers and agent skills against the OWASP MCP Top 10. Runs locally, no API key, low false positives, SARIF output.",
+  "type": "module",
+  "bin": {
+    "mcpaudit": "bin/mcpaudit.mjs"
+  },
+  "files": [
+    "bin",
+    "src",
+    "skills",
+    ".claude-plugin",
+    "README.md",
+    "LICENSE"
+  ],
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "test": "node --test test/poisoning.test.mjs test/concealment.test.mjs test/config.test.mjs test/cli.test.mjs",
+    "scan": "node bin/mcpaudit.mjs ."
+  },
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "security",
+    "scanner",
+    "sast",
+    "prompt-injection",
+    "tool-poisoning",
+    "owasp",
+    "sarif",
+    "ai-security",
+    "agent-security"
+  ],
+  "author": "Christ-loisele Atidegla",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/catidegla/mcpaudit.git"
+  },
+  "homepage": "https://github.com/catidegla/mcpaudit#readme",
+  "bugs": {
+    "url": "https://github.com/catidegla/mcpaudit/issues"
+  }
+}

@@ -1,0 +1,14 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-plugin.json",
+  "name": "mcpaudit",
+  "version": "0.1.0",
+  "description": "Audit MCP servers and agent skills for tool poisoning, hidden instructions, leaked credentials and unsafe configuration, mapped to the OWASP MCP Top 10.",
+  "author": {
+    "name": "Christ-loisele Atidegla",
+    "url": "https://github.com/catidegla"
+  },
+  "homepage": "https://github.com/catidegla/mcpaudit",
+  "repository": "https://github.com/catidegla/mcpaudit",
+  "license": "MIT",
+  "keywords": ["mcp", "security", "owasp", "tool-poisoning", "prompt-injection", "scanner"]
+}

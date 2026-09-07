@@ -1,0 +1,104 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+        node: ['20', '22']
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Fixtures are reproducible
+        shell: bash
+        run: |
+          node fixtures/build-fixtures.mjs
+          git diff --exit-code fixtures/ || {
+            echo "fixtures/ is out of date, run node fixtures/build-fixtures.mjs and commit"
+            exit 1
+          }
+
+      - run: npm test
+
+      # The benign fixture must stay silent. This is the false positive gate,
+      # duplicated at the CLI level so a regression in wiring fails too.
+      - name: No findings on the benign fixture
+        shell: bash
+        run: |
+          node bin/mcpaudit.mjs fixtures/benign
+          echo "benign fixture is clean"
+
+      - name: Hostile fixture fails the run
+        shell: bash
+        run: |
+          if node bin/mcpaudit.mjs fixtures/malicious; then
+            echo "expected a non-zero exit on the malicious fixture"
+            exit 1
+          fi
+          echo "malicious fixture correctly exits non-zero"
+
+      # Dogfooding. The skill shipped with this tool must pass its own scanner.
+      - name: Scan our own skill
+        shell: bash
+        run: node bin/mcpaudit.mjs skills
+
+  sarif:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Produce SARIF
+        run: node bin/mcpaudit.mjs fixtures/malicious --format sarif --output mcpaudit.sarif --fail-on never
+
+      - name: Validate against the SARIF schema
+        run: |
+          npx --yes ajv-cli@5 validate \
+            -s <(curl -sL https://json.schemastore.org/sarif-2.1.0.json) \
+            -d mcpaudit.sarif \
+            --spec=draft2020 --strict=false || {
+              echo "SARIF failed schema validation"
+              exit 1
+            }
+        shell: bash
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sarif
+          path: mcpaudit.sarif
+
+  manifests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Manifests are valid and agree on version
+        run: |
+          node -e "
+            const fs = require('fs');
+            const market = JSON.parse(fs.readFileSync('.claude-plugin/marketplace.json', 'utf8'));
+            const plugin = JSON.parse(fs.readFileSync('.claude-plugin/plugin.json', 'utf8'));
+            const pkg = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+            const entry = market.plugins.find(p => p.name === plugin.name);
+            if (!entry) throw new Error('plugin.json is not listed in marketplace.json');
+            for (const [a, b] of [[entry.version, plugin.version], [plugin.version, pkg.version]]) {
+              if (a !== b) throw new Error('version mismatch: ' + a + ' vs ' + b);
+            }
+            console.log('manifests agree on version ' + pkg.version);
+          "
