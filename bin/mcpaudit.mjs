@@ -56,10 +56,10 @@ Options
   --depth <n>                     directory recursion depth (default: 6)
 
 Examples
-  npx mcpaudit .
-  npx mcpaudit installed
-  npx mcpaudit . --format sarif --output mcpaudit.sarif
-  npx mcpaudit . --fail-on medium --ignore config/unpinned-dependency
+  mcpaudit .
+  mcpaudit installed
+  mcpaudit . --format sarif --output mcpaudit.sarif
+  mcpaudit . --fail-on medium --ignore config/unpinned-dependency
 `);
 }
 

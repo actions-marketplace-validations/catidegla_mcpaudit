@@ -10,8 +10,8 @@ MCP moves the trust boundary. A tool description is not documentation, it is tex
 ## Run the scanner first
 
 ```bash
-npx mcpaudit .              # a repository or a directory of configs
-npx mcpaudit installed      # the servers this machine already has configured
+npx github:catidegla/mcpaudit .           # a repository or a directory of configs
+npx github:catidegla/mcpaudit installed   # the servers this machine already has configured
 ```
 
 It is local, needs no API key, and maps every finding to the OWASP MCP Top 10. Add `--all` to see low confidence observations, `--format sarif --output mcpaudit.sarif` for code scanning.
@@ -23,8 +23,8 @@ The scanner covers configuration and metadata. It does not read the server's imp
 Static analysis catches a server that arrives hostile. It cannot catch one that turns hostile in version 1.4.2.
 
 ```bash
-npx mcpaudit pin .          # record the descriptions you reviewed
-npx mcpaudit verify .       # report anything that changed since
+npx github:catidegla/mcpaudit pin .       # record the descriptions you reviewed
+npx github:catidegla/mcpaudit verify .    # report anything that changed since
 ```
 
 Run `verify` in CI, and after any server update. A description that changes after approval is the rug pull, and it is the most practical attack against a server installed unpinned from a registry.

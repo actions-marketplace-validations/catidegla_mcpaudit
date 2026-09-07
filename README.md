@@ -7,7 +7,7 @@
 Local. No API key. Mapped to the OWASP MCP Top 10.
 
 [![CI](https://github.com/catidegla/mcpaudit/actions/workflows/ci.yml/badge.svg)](https://github.com/catidegla/mcpaudit/actions/workflows/ci.yml)
-[![npm](https://img.shields.io/npm/v/mcpaudit?color=cb3837)](https://www.npmjs.com/package/mcpaudit)
+[![Zero dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](package.json)
 [![OWASP MCP Top 10](https://img.shields.io/badge/OWASP-MCP%20Top%2010-000000)](https://owasp.org/www-project-mcp-top-10/)
 [![Node](https://img.shields.io/badge/node-%E2%89%A520-339933)](package.json)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
@@ -17,7 +17,7 @@ Local. No API key. Mapped to the OWASP MCP Top 10.
 ---
 
 ```bash
-npx mcpaudit installed
+npx github:catidegla/mcpaudit installed
 ```
 
 A tool description is not documentation. It is text that reaches the model as instructions, written by whoever published the server, and in most clients nobody reads it after the first install.
@@ -81,8 +81,8 @@ Parameter descriptions are analyzed alongside tool descriptions. They reach the 
 Static analysis catches a server that arrives hostile. It cannot catch one that turns hostile in version 1.4.2, which is the practical attack against anything installed unpinned from a registry.
 
 ```bash
-npx mcpaudit pin .        # record the descriptions you reviewed
-npx mcpaudit verify .     # report anything that changed since
+npx github:catidegla/mcpaudit pin .      # record the descriptions you reviewed
+npx github:catidegla/mcpaudit verify .   # report anything that changed since
 ```
 
 ```
@@ -97,14 +97,33 @@ npx mcpaudit verify .     # report anything that changed since
 
 Commit `.mcpaudit-baseline.json` so the approved state is reviewed like any other change, and run `verify` in CI and after every server update.
 
-## Usage
+## Install
+
+Run it without installing anything:
 
 ```bash
-npx mcpaudit [path]        # scan a directory or file, defaults to the current directory
-npx mcpaudit installed     # scan the MCP configs your clients already have
-npx mcpaudit pin [path]    # record current tool metadata as approved
-npx mcpaudit verify [path] # report metadata that changed since it was pinned
-npx mcpaudit rules         # list the OWASP categories
+npx github:catidegla/mcpaudit installed
+```
+
+Or clone it and run it directly, which is the better choice for a security tool you have not read yet:
+
+```bash
+git clone https://github.com/catidegla/mcpaudit
+node mcpaudit/bin/mcpaudit.mjs installed
+```
+
+Node 20 or newer. No dependencies to install.
+
+## Usage
+
+The examples below use the bare command. Prefix them with `npx github:catidegla/mcpaudit` or point at `bin/mcpaudit.mjs` if you have not put it on your PATH.
+
+```bash
+mcpaudit [path]        # scan a directory or file, defaults to the current directory
+mcpaudit installed     # scan the MCP configs your clients already have
+mcpaudit pin [path]    # record current tool metadata as approved
+mcpaudit verify [path] # report metadata that changed since it was pinned
+mcpaudit rules         # list the OWASP categories
 ```
 
 | Option | |
@@ -122,7 +141,7 @@ It reads MCP configuration (`claude_desktop_config.json`, `.mcp.json`, `mcp.json
 
 ```yaml
 - name: Audit MCP configuration
-  run: npx mcpaudit . --format sarif --output mcpaudit.sarif --fail-on never
+  run: npx github:catidegla/mcpaudit . --format sarif --output mcpaudit.sarif --fail-on never
 
 - uses: github/codeql-action/upload-sarif@v3
   with:
