@@ -1,6 +1,9 @@
 {
-  "name": "mcpaudit",
+  "name": "@catidegla/mcpaudit",
   "version": "0.1.0",
+  "publishConfig": {
+    "access": "public"
+  },
   "description": "Audit MCP servers and agent skills against the OWASP MCP Top 10. Runs locally, no API key, low false positives, SARIF output.",
   "type": "module",
   "bin": {

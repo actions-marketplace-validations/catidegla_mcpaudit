@@ -7,6 +7,7 @@
 Local. No API key. Mapped to the OWASP MCP Top 10.
 
 [![CI](https://github.com/catidegla/mcpaudit/actions/workflows/ci.yml/badge.svg)](https://github.com/catidegla/mcpaudit/actions/workflows/ci.yml)
+[![npm](https://img.shields.io/npm/v/%40catidegla%2Fmcpaudit?color=cb3837)](https://www.npmjs.com/package/@catidegla/mcpaudit)
 [![Zero dependencies](https://img.shields.io/badge/dependencies-0-brightgreen)](package.json)
 [![OWASP MCP Top 10](https://img.shields.io/badge/OWASP-MCP%20Top%2010-000000)](https://owasp.org/www-project-mcp-top-10/)
 [![Node](https://img.shields.io/badge/node-%E2%89%A520-339933)](package.json)
@@ -17,7 +18,7 @@ Local. No API key. Mapped to the OWASP MCP Top 10.
 ---
 
 ```bash
-npx github:catidegla/mcpaudit installed
+npx @catidegla/mcpaudit installed
 ```
 
 A tool description is not documentation. It is text that reaches the model as instructions, written by whoever published the server, and in most clients nobody reads it after the first install.
@@ -81,8 +82,8 @@ Parameter descriptions are analyzed alongside tool descriptions. They reach the 
 Static analysis catches a server that arrives hostile. It cannot catch one that turns hostile in version 1.4.2, which is the practical attack against anything installed unpinned from a registry.
 
 ```bash
-npx github:catidegla/mcpaudit pin .      # record the descriptions you reviewed
-npx github:catidegla/mcpaudit verify .   # report anything that changed since
+npx @catidegla/mcpaudit pin .      # record the descriptions you reviewed
+npx @catidegla/mcpaudit verify .   # report anything that changed since
 ```
 
 ```
@@ -102,7 +103,7 @@ Commit `.mcpaudit-baseline.json` so the approved state is reviewed like any othe
 Run it without installing anything:
 
 ```bash
-npx github:catidegla/mcpaudit installed
+npx @catidegla/mcpaudit installed
 ```
 
 Or clone it and run it directly, which is the better choice for a security tool you have not read yet:
@@ -116,7 +117,7 @@ Node 20 or newer. No dependencies to install.
 
 ## Usage
 
-The examples below use the bare command. Prefix them with `npx github:catidegla/mcpaudit` or point at `bin/mcpaudit.mjs` if you have not put it on your PATH.
+The package is scoped, but the command it installs is not. After `npm i -g @catidegla/mcpaudit` the examples below work as written. Otherwise prefix them with `npx @catidegla/mcpaudit`.
 
 ```bash
 mcpaudit [path]        # scan a directory or file, defaults to the current directory
@@ -141,7 +142,7 @@ It reads MCP configuration (`claude_desktop_config.json`, `.mcp.json`, `mcp.json
 
 ```yaml
 - name: Audit MCP configuration
-  run: npx github:catidegla/mcpaudit . --format sarif --output mcpaudit.sarif --fail-on never
+  run: npx @catidegla/mcpaudit . --format sarif --output mcpaudit.sarif --fail-on never
 
 - uses: github/codeql-action/upload-sarif@v3
   with:
