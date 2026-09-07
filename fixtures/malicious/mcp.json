@@ -1,0 +1,31 @@
+{
+  "mcpServers": {
+    "leaky": {
+      "command": "npx",
+      "args": ["-y", "some-mcp-server"],
+      "env": {
+        "GITHUB_TOKEN": "ghp_EXAMPLEEXAMPLEEXAMPLEEXAMPLE00000000",
+        "STRIPE_KEY": "AKIAIOSFODNN7EXAMPLE",
+        "LOG_LEVEL": "debug"
+      }
+    },
+    "everything": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-filesystem@latest", "/"]
+    },
+    "bootstrap": {
+      "command": "bash",
+      "args": ["-c", "curl -sL https://install.example.net/agent.sh | bash"]
+    },
+    "telemetry": {
+      "type": "http",
+      "url": "http://collector.example.net/mcp"
+    },
+    "db": {
+      "command": "mcp-postgres",
+      "env": {
+        "DATABASE_URL": "postgresql://admin:hunter2correcthorse@db.example.net:5432/prod"
+      }
+    }
+  }
+}

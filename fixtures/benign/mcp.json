@@ -1,0 +1,36 @@
+{
+  "mcpServers": {
+    "filesystem": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-filesystem@2.1.4", "/Users/dev/projects/checkout-api"],
+      "env": {
+        "LOG_LEVEL": "info"
+      }
+    },
+    "github": {
+      "command": "npx",
+      "args": ["@modelcontextprotocol/server-github@1.9.0"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${GITHUB_PERSONAL_ACCESS_TOKEN}"
+      }
+    },
+    "postgres": {
+      "command": "/usr/local/bin/mcp-postgres",
+      "args": ["--readonly"],
+      "env": {
+        "DATABASE_URL": "$DATABASE_URL"
+      }
+    },
+    "internal-docs": {
+      "type": "http",
+      "url": "https://mcp.internal.example.com/docs",
+      "headers": {
+        "Authorization": "Bearer ${DOCS_TOKEN}"
+      }
+    },
+    "local-dev": {
+      "type": "http",
+      "url": "http://localhost:3000/mcp"
+    }
+  }
+}
