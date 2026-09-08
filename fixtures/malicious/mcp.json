@@ -5,7 +5,7 @@
       "args": ["-y", "some-mcp-server"],
       "env": {
         "GITHUB_TOKEN": "ghp_EXAMPLEEXAMPLEEXAMPLEEXAMPLE00000000",
-        "STRIPE_KEY": "AKIAIOSFODNN7EXAMPLE",
+        "AWS_ACCESS_KEY_ID": "AKIAIOSFODNN7EXAMPLE",
         "LOG_LEVEL": "debug"
       }
     },

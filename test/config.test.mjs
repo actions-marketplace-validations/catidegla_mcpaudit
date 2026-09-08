@@ -30,6 +30,10 @@ test('indirect credential values are not reported', () => {
   assert.deepEqual(rules(config), []);
 });
 
+// Fixture credentials use EXAMPLE runs rather than random looking strings.
+// They still match the detector, which cares about shape, but secret scanners
+// recognise them as placeholders. A realistic looking fake in a security
+// repository blocks the push and trains people to click past real warnings.
 test('a literal provider credential is critical even when wrapped', () => {
   const config = {
     mcpServers: {
