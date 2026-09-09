@@ -46,9 +46,9 @@ That description looks like `Returns the current weather for a city.` in every c
 
 ## Why another scanner
 
-Because the existing ones cry wolf, and by a wider margin than you would guess. An [independent audit in April 2026](https://appsecsanta.com/research/mcp-server-security-audit-2026) measured roughly a **78% false positive rate** from regex-based MCP scanners. The cause is structural rather than a tuning mistake: Cisco's `coercive_injection_generic` rule fires on "You must call this function first", which is ordinary tool dependency documentation. A scanner that is wrong four times in five teaches people to skip the report, which is worse than not scanning at all.
+Because the existing ones cry wolf, and by a wider margin than you would guess. An [independent audit in April 2026](https://appsecsanta.com/research/mcp-server-security-audit-2026) measured roughly a **78% false positive rate** from regex-based MCP scanners. The cause is structural, not a tuning mistake: Cisco's `coercive_injection_generic` rule fires on "You must call this function first", which is ordinary tool dependency documentation. A scanner that is wrong four times in five teaches people to skip the report, which is worse than not scanning at all.
 
-**No rule here reports on a single keyword.** Findings are built from independent signals, each weighted by how much it means on its own, and a lone match scores below the reporting threshold and stays hidden. Counter-evidence subtracts.
+No rule here reports on a single keyword. Findings are built from independent signals, each weighted by how much it means on its own, and a lone match scores below the reporting threshold and stays hidden. Counter-evidence subtracts.
 
 Direction is part of the match, too:
 
@@ -155,14 +155,14 @@ Findings land as annotations on the pull request, with `security-severity` set s
 
 Being clear about this, because a security tool that implies more coverage than it has is its own risk.
 
-- **It does not read server source code.** Configuration and metadata only. A server whose description is honest and whose implementation shells out to `bash` will pass.
-- **It does not execute servers.** Nothing is spawned, no tool is called, no network request is made. That is deliberate, since spawning an untrusted server to inspect it is the thing you were trying to avoid.
-- **It is not a substitute for reading the tool descriptions.** It is a way to know which ones deserve your attention.
-- **It has no model in the loop.** Everything is deterministic and local, so it is fast and private, and it will miss semantically novel phrasings that a model would notice.
+- It does not read server source code. Configuration and metadata only. A server whose description is honest and whose implementation shells out to `bash` will pass.
+- It does not execute servers. Nothing is spawned, no tool is called, no network request is made. That is deliberate, since spawning an untrusted server to inspect it is the thing you were trying to avoid.
+- It is not a substitute for reading the tool descriptions. It is a way to know which ones deserve your attention.
+- It has no model in the loop. Everything is deterministic and local, so it is fast and private, and it will miss semantically novel phrasings that a model would notice.
 
 ## How confidence works
 
-Each analyzer emits weighted signals rather than a verdict.
+Each analyzer emits weighted signals, not a verdict.
 
 | Weight | Meaning |
 | ---: | :--- |
@@ -171,7 +171,7 @@ Each analyzer emits weighted signals rather than a verdict.
 | 1.0 | Supporting. Meaningless alone. |
 | -2.0 | Counter-evidence. The match looks legitimate in context. |
 
-Totals of 6 or more are high confidence, 3.5 or more are medium, anything below is low and hidden unless you pass `--all`. Low confidence findings are kept in the JSON report rather than dropped, so you can audit what was suppressed.
+Totals of 6 or more are high confidence, 3.5 or more are medium, anything below is low and held back from every output format unless you pass `--all`. It is not discarded, so `--all` is how you audit what was suppressed.
 
 Every finding shows the signals that produced it, and the counter-evidence that argued against it. If you disagree with a call, the reasoning is right there.
 
