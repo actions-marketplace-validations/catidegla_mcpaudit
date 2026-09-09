@@ -46,7 +46,7 @@ That description looks like `Returns the current weather for a city.` in every c
 
 ## Why another scanner
 
-Because the existing ones cry wolf, and by a wider margin than you would guess. An [independent audit in April 2026](https://appsecsanta.com/research/mcp-server-security-audit-2026) measured roughly a **78% false positive rate** from YARA-based MCP scanners. The cause is structural rather than a tuning mistake: Cisco's `coercive_injection_generic` rule fires on "You must call this function first", which is ordinary tool dependency documentation. A scanner that is wrong four times in five teaches people to skip the report, which is worse than not scanning at all.
+Because the existing ones cry wolf, and by a wider margin than you would guess. An [independent audit in April 2026](https://appsecsanta.com/research/mcp-server-security-audit-2026) measured roughly a **78% false positive rate** from regex-based MCP scanners. The cause is structural rather than a tuning mistake: Cisco's `coercive_injection_generic` rule fires on "You must call this function first", which is ordinary tool dependency documentation. A scanner that is wrong four times in five teaches people to skip the report, which is worse than not scanning at all.
 
 **No rule here reports on a single keyword.** Findings are built from independent signals, each weighted by how much it means on its own, and a lone match scores below the reporting threshold and stays hidden. Counter-evidence subtracts.
 
