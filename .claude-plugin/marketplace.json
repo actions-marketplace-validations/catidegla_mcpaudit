@@ -1,7 +1,7 @@
 {
   "$schema": "https://json.schemastore.org/claude-code-marketplace.json",
   "name": "mcpaudit",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Security auditing for MCP servers and agent skills.",
   "owner": {
     "name": "Christ-loisele Atidegla",
@@ -11,7 +11,7 @@
     {
       "name": "mcpaudit",
       "description": "Audit MCP servers and agent skills for tool poisoning, hidden instructions, leaked credentials and unsafe configuration, mapped to the OWASP MCP Top 10. Includes a review skill and a local scanner that needs no API key.",
-      "version": "0.1.0",
+      "version": "0.1.1",
       "author": { "name": "Christ-loisele Atidegla", "url": "https://github.com/catidegla" },
       "source": "./",
       "category": "security",
