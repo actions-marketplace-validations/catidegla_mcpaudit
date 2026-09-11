@@ -154,7 +154,7 @@ Findings land as annotations on the pull request, with `security-severity` set s
 ## In CI
 
 ```yaml
-- uses: catidegla/mcpaudit@v0.1.0
+- uses: catidegla/mcpaudit@v0.1.1
   with:
     path: .
     fail-on: high
