@@ -97,3 +97,43 @@ jobs:
             }
             console.log('manifests agree on version ' + pkg.version);
           "
+
+  action:
+    name: The action runs
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Build the fixtures
+        run: node fixtures/build-fixtures.mjs
+
+      # The malicious manifest has to fail the job, or the action is decorative.
+      - id: hostile
+        uses: ./
+        continue-on-error: true
+        with:
+          path: fixtures
+          fail-on: high
+          sarif-file: mcpaudit.sarif
+
+      - name: It fired, wrote SARIF, and failed the job
+        run: |
+          [ "${{ steps.hostile.outcome }}" = "failure" ] || { echo "the action passed a poisoned manifest"; exit 1; }
+          test -f mcpaudit.sarif || { echo "no SARIF was written"; exit 1; }
+          [ "${{ steps.hostile.outputs.findings }}" -gt 0 ] || { echo "SARIF has no results"; exit 1; }
+          node -e "JSON.parse(require('fs').readFileSync('mcpaudit.sarif','utf8'))" || { echo "SARIF is not valid JSON"; exit 1; }
+
+      # And the half that decides whether anybody keeps the tool: the corpus it
+      # is forbidden to fire on must come back clean through the action too.
+      - id: benign
+        uses: ./
+        with:
+          path: fixtures/benign
+          fail-on: low
+          sarif-file: ''
+          summary: 'false'
+
+      - name: Nothing fired on the benign corpus
+        run: |
+          [ "${{ steps.benign.outputs.findings }}" = "0" ] || { echo "fired on legitimate metadata: ${{ steps.benign.outputs.findings }} finding(s)"; exit 1; }
+          echo "clean on the benign corpus"

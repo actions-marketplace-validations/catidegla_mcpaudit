@@ -151,6 +151,23 @@ It reads MCP configuration (`claude_desktop_config.json`, `.mcp.json`, `mcp.json
 
 Findings land as annotations on the pull request, with `security-severity` set so GitHub buckets them correctly.
 
+## In CI
+
+```yaml
+- uses: catidegla/mcpaudit@v0.1.0
+  with:
+    path: .
+    fail-on: high
+
+- uses: github/codeql-action/upload-sarif@v3
+  with:
+    sarif_file: mcpaudit.sarif
+```
+
+Findings land on the diff through the SARIF. Start at `fail-on: never` on an
+existing repository, read one report, then tighten: a scanner that blocks a
+merge on its first day is one somebody turns off on its second.
+
 ## What it does not do
 
 Being clear about this, because a security tool that implies more coverage than it has is its own risk.

@@ -1,0 +1,92 @@
+name: mcpaudit
+description: Scan MCP servers and agent skills for tool poisoning and the rest of the OWASP MCP Top 10.
+author: Christ-loisele Atidegla
+
+branding:
+  icon: shield
+  color: red
+
+inputs:
+  path:
+    description: What to scan.
+    default: '.'
+  fail-on:
+    description: >-
+      Severity at which the job fails: critical, high, medium, low or never.
+      Start at never on an existing repository, read one report, then tighten.
+    default: high
+  sarif-file:
+    description: Where to write the SARIF report. Leave empty to skip it. Upload it with codeql-action/upload-sarif and findings land on the diff.
+    default: mcpaudit.sarif
+  ignore:
+    description: Rules to suppress, space separated. Accepts "poisoning/*" and "rule@path" forms.
+    default: ''
+  all:
+    description: Include low confidence observations. Off by default, because a scanner that is wrong four times in five teaches people to skip the report.
+    default: 'false'
+  depth:
+    description: Directory recursion depth.
+    default: '6'
+  summary:
+    description: Write the findings to the job summary.
+    default: 'true'
+
+outputs:
+  findings:
+    description: How many findings were reported.
+    value: ${{ steps.scan.outputs.findings }}
+  sarif-file:
+    description: Path to the SARIF report, if one was written.
+    value: ${{ steps.scan.outputs.sarif-file }}
+
+runs:
+  using: composite
+  steps:
+    - name: Set up Node
+      uses: actions/setup-node@v4
+      with:
+        node-version: '22'
+
+    - id: scan
+      shell: bash
+      run: |
+        args=("${{ inputs.path }}" --fail-on "${{ inputs.fail-on }}" --depth "${{ inputs.depth }}")
+        if [ "${{ inputs.all }}" = "true" ]; then args+=(--all); fi
+        for rule in ${{ inputs.ignore }}; do args+=(--ignore "$rule"); done
+
+        # SARIF first, because it is the artefact the diff annotations come
+        # from and it has to exist even when the scan fails the job.
+        if [ -n "${{ inputs.sarif-file }}" ]; then
+          set +e
+          node "${{ github.action_path }}/bin/mcpaudit.mjs" "${args[@]}" --format sarif --output "${{ inputs.sarif-file }}"
+          code=$?
+          set -e
+          echo "sarif-file=${{ inputs.sarif-file }}" >> "$GITHUB_OUTPUT"
+          findings=$(node -p "JSON.parse(require('fs').readFileSync('${{ inputs.sarif-file }}','utf8')).runs[0].results.length" 2>/dev/null || echo 0)
+        else
+          set +e
+          node "${{ github.action_path }}/bin/mcpaudit.mjs" "${args[@]}" --format json --output mcpaudit.json
+          code=$?
+          set -e
+          findings=$(node -p "(JSON.parse(require('fs').readFileSync('mcpaudit.json','utf8')).findings||[]).length" 2>/dev/null || echo 0)
+        fi
+
+        echo "findings=$findings" >> "$GITHUB_OUTPUT"
+
+        if [ "${{ inputs.summary }}" = "true" ]; then
+          {
+            echo "### mcpaudit"
+            echo ""
+            if [ "$findings" = "0" ]; then
+              echo "Nothing found at ${{ inputs.fail-on }} or above."
+            else
+              echo "**$findings finding(s).** Every one shows the signals that produced it and the counter-evidence against it."
+              if [ -n "${{ inputs.sarif-file }}" ]; then
+                echo ""
+                echo "Upload \`${{ inputs.sarif-file }}\` with \`github/codeql-action/upload-sarif\` and they land on the diff."
+              fi
+            fi
+          } >> "$GITHUB_STEP_SUMMARY"
+        fi
+
+        exit $code
