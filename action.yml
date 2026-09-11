@@ -1,4 +1,4 @@
-name: mcpaudit
+name: mcpaudit scan
 description: Scan MCP servers and agent skills for tool poisoning and the rest of the OWASP MCP Top 10.
 author: Christ-loisele Atidegla
 
