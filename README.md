@@ -178,7 +178,7 @@ Every finding shows the signals that produced it, and the counter-evidence that 
 ## Contributing
 
 ```bash
-npm test    # 35 tests, no dependencies to install
+npm test    # 37 tests, no dependencies to install
 ```
 
 New rules are welcome. Two requirements:
