@@ -31,6 +31,56 @@ try {
 const schema = JSON.parse(readFileSync(schemaPath, 'utf8'));
 const data = JSON.parse(readFileSync(dataPath, 'utf8'));
 
+/**
+ * OASIS publishes the canonical SARIF schema declaring draft-04, which ajv 8
+ * does not compile. The document itself uses nothing draft-04 only, so it is
+ * safe to read as draft-07, but "safe" is a claim worth enforcing rather than
+ * commenting: the only meaningful incompatibility is exclusiveMinimum and
+ * exclusiveMaximum, which draft-04 writes as booleans beside minimum/maximum
+ * and draft-07 writes as numbers. If either ever appears as a boolean the
+ * rewrite would silently change what the schema means, so refuse instead.
+ */
+function draft04Only(node, path = '') {
+  if (Array.isArray(node)) {
+    return node.flatMap((item, i) => draft04Only(item, `${path}/${i}`));
+  }
+
+  if (node === null || typeof node !== 'object') return [];
+
+  const found = [];
+
+  for (const keyword of ['exclusiveMinimum', 'exclusiveMaximum']) {
+    if (typeof node[keyword] === 'boolean') found.push(`${path}/${keyword}`);
+  }
+
+  for (const [key, value] of Object.entries(node)) {
+    found.push(...draft04Only(value, `${path}/${key}`));
+  }
+
+  return found;
+}
+
+if (schema.$schema && schema.$schema.includes('draft-04')) {
+  const blockers = draft04Only(schema);
+
+  if (blockers.length > 0) {
+    console.error(`${schemaPath} uses draft-04 boolean exclusiveMinimum/exclusiveMaximum, so it cannot be read as draft-07:`);
+    for (const where of blockers.slice(0, 10)) console.error(`  ${where}`);
+    process.exit(2);
+  }
+
+  schema.$schema = 'http://json-schema.org/draft-07/schema#';
+
+  // draft-04 spells the schema identifier `id`, draft-07 spells it `$id`, and
+  // ajv refuses the old one outright. The SARIF schema carries exactly one, at
+  // the root. Anything nested would be a subschema identifier that $refs could
+  // be resolving against, so rename only the root and leave the rest alone.
+  if (typeof schema.id === 'string' && schema.$id === undefined) {
+    schema.$id = schema.id;
+    delete schema.id;
+  }
+}
+
 // strict:false because the published SARIF schema uses keywords ajv considers
 // non-standard. That is the schema's business, not ours.
 const ajv = new Ajv({ strict: false, allErrors: true, validateFormats: true });
