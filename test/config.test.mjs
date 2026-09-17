@@ -77,6 +77,32 @@ test('localhost over http is not flagged as cleartext or unauthenticated', () =>
   assert.deepEqual(rules(config), []);
 });
 
+test('the rest of 127/8 is loopback too, not just 127.0.0.1', () => {
+  const config = { mcpServers: { dev: { type: 'http', url: 'http://127.0.0.53:3000/mcp' } } };
+  assert.deepEqual(rules(config), []);
+});
+
+test('0.0.0.0 is not loopback, so an unauthenticated bind there is reported', () => {
+  const config = { mcpServers: { dev: { type: 'http', url: 'http://0.0.0.0:8000/mcp' } } };
+  const found = rules(config);
+
+  assert.ok(
+    found.includes('config/unauthenticated-remote'),
+    'a server listening on every interface with no auth header should be reported'
+  );
+
+  // Nothing is intercepting this: the client still connects over the loopback
+  // path, so the cleartext claim would be wrong.
+  assert.ok(!found.includes('config/cleartext-transport'), 'no network hop, so nothing to intercept');
+});
+
+test('an auth header clears the every-interface case as well', () => {
+  const config = {
+    mcpServers: { dev: { type: 'http', url: 'http://0.0.0.0:8000/mcp', headers: { Authorization: 'Bearer $TOKEN' } } },
+  };
+  assert.deepEqual(rules(config), []);
+});
+
 test('a pinned package does not trigger the supply chain rule', () => {
   const pinned = { mcpServers: { a: { command: 'npx', args: ['@scope/server@1.2.3', '/srv/project'] } } };
   const floating = { mcpServers: { a: { command: 'npx', args: ['@scope/server', '/srv/project'] } } };
