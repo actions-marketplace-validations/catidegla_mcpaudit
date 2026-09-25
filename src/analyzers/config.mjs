@@ -223,9 +223,17 @@ function analyzeTransport(server, name, file) {
     return findings;
   }
 
-  const local = /^(?:localhost|127\.0\.0\.1|\[::1\]|0\.0\.0\.0)$/i.test(parsed.hostname);
+  // Loopback and "every interface" are not the same thing, and lumping them
+  // together loses the more interesting of the two. 127/8 and ::1 are only
+  // reachable from this machine. 0.0.0.0 and :: are what a server binds to
+  // when it is listening on every interface, so a config carrying one is
+  // evidence the endpoint is exposed rather than evidence that it is private.
+  const loopback = /^(?:localhost|127(?:\.\d{1,3}){3}|\[::1\]|::1)$/i.test(parsed.hostname);
+  const allInterfaces = /^(?:0\.0\.0\.0|\[::\]|::)$/.test(parsed.hostname);
 
-  if (parsed.protocol === 'http:' && !local) {
+  // The connection itself does not leave the host in either case, so there is
+  // nobody on the path to rewrite tool descriptions in transit.
+  if (parsed.protocol === 'http:' && !loopback && !allInterfaces) {
     findings.push(
       finding({
         rule: 'config/cleartext-transport',
@@ -247,21 +255,31 @@ function analyzeTransport(server, name, file) {
 
   const headers = server.headers ?? {};
   const hasAuth = Object.keys(headers).some((h) => /^(?:authorization|x-api-key|x-auth|proxy-authorization)$/i.test(h));
-  if (!hasAuth && !local) {
+  if (!hasAuth && !loopback) {
     findings.push(
       finding({
         rule: 'config/unauthenticated-remote',
         owasp: owasp('MCP07'),
         severity: 'medium',
-        title: 'Remote server is configured without an authorization header',
-        detail:
-          `"${name}" points at ${parsed.origin} with no authorization or API key header. Either the endpoint is open ` +
-          'to anyone who knows the URL, or authentication happens somewhere this config does not show.',
-        remedy: 'Confirm how the endpoint authenticates callers. If it does not, treat every result it returns as untrusted input.',
+        title: allInterfaces
+          ? 'Server listens on every interface without an authorization header'
+          : 'Remote server is configured without an authorization header',
+        detail: allInterfaces
+          ? `"${name}" points at ${parsed.origin}. That address is not loopback: it is what a server binds to when it ` +
+            'accepts connections on every interface, and there is no authorization or API key header here, so anything ' +
+            'that can route to this host can call the server. An unauthenticated MCP endpoint is reachable by more than ' +
+            'the agent it was meant for.'
+          : `"${name}" points at ${parsed.origin} with no authorization or API key header. Either the endpoint is open ` +
+            'to anyone who knows the URL, or authentication happens somewhere this config does not show.',
+        remedy: allInterfaces
+          ? 'Bind to 127.0.0.1 if only this machine should reach it, or require an authorization header if it is meant to be shared.'
+          : 'Confirm how the endpoint authenticates callers. If it does not, treat every result it returns as untrusted input.',
         location: { file, server: name, field: 'headers' },
         signals: [
           signal('no-auth-header', 2.5, 'no authorization, x-api-key or equivalent header'),
-          signal('remote-endpoint', 1.5, `non-local host ${parsed.hostname}`),
+          allInterfaces
+            ? signal('all-interfaces-bind', 1.5, `${parsed.hostname} accepts connections on every interface`)
+            : signal('remote-endpoint', 1.5, `non-local host ${parsed.hostname}`),
         ],
       })
     );
